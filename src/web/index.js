@@ -1,5 +1,7 @@
 /* global JsonUrl */
 
+import 'whatwg-fetch';
+
 import React from 'react';
 import { applyMiddleware } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
@@ -16,6 +18,8 @@ import {
   selectors,
   themeChangeActions
 } from '../lib/store';
+import Metrics from '../lib/metrics';
+
 import App from './lib/components/App';
 import storage from './lib/storage';
 
@@ -75,11 +79,19 @@ const composeEnhancers = composeWithDevTools({});
 const store = createAppStore(
   {},
   composeEnhancers(
-    applyMiddleware(updateExtensionThemeMiddleware, updateHistoryMiddleware)
+    applyMiddleware(
+      updateExtensionThemeMiddleware,
+      updateHistoryMiddleware,
+      Metrics.storeMiddleware()
+    )
   )
 );
 
 storage.init(store);
+
+Metrics.init();
+const clientUUID = storage.fetchOrGenerateClientUUID();
+Metrics.setClientUUID(clientUUID);
 
 window.addEventListener('popstate', ({ state: { theme } }) =>
   store.dispatch({
@@ -99,6 +111,8 @@ window.addEventListener('message', ({ source, data: message }) => {
       const hasExtension = selectors.hasExtension(store.getState());
       if (!hasExtension) {
         store.dispatch(actions.ui.setHasExtension({ hasExtension: true }));
+        Metrics.installSuccess();
+        postMessage('setClientUUID', { clientUUID: Metrics.getClientUUID() });
         postMessage('setTheme', { theme: selectors.theme(store.getState()) });
       }
     }

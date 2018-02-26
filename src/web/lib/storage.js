@@ -1,7 +1,11 @@
+import uuidV4 from 'uuid/v4';
+
 import { actions } from '../../lib/store';
 import { makeLog } from '../../lib/utils';
 
 const log = makeLog('web.storage');
+
+const CLIENT_UUID_KEY = 'Themer-clientUUID';
 
 const THEME_STORAGE_PREFIX = 'THEME-';
 
@@ -94,5 +98,15 @@ export default {
   putTheme,
   deleteTheme,
   getTheme,
-  listThemes
+  listThemes,
+
+  // Get UUID from localStorage, generating one if necessary
+  fetchOrGenerateClientUUID() {
+    let clientUUID = localStorage.getItem(CLIENT_UUID_KEY);
+    if (!clientUUID) {
+      clientUUID = uuidV4();
+      localStorage.setItem(CLIENT_UUID_KEY, clientUUID);
+    }
+    return clientUUID;
+  }
 };
