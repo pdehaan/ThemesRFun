@@ -1,4 +1,4 @@
-import { defaultColors } from './constants';
+import defaultColors from './default-colors.json';
 
 export const DEBUG = process.env.NODE_ENV === 'development';
 
